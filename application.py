@@ -2,6 +2,7 @@ import dash
 from dash import dcc,html,Input,Output
 import builder
 import boto3
+import datetime
 import pandas as pd
 import numpy as np
 import plotly.express as px
@@ -15,7 +16,7 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 #declare the app
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
-#s3 = boto3.client('s3')
+s3 = boto3.client('s3')
 
 ########### Set up the layout
 app.layout = html.Div(children=[
@@ -27,7 +28,7 @@ app.layout = html.Div(children=[
             id='plot2',
         ),
 	dcc.Interval(id = 'interval-component',
-						interval = 1*5000,#milliseconds
+						interval = 1*30000,#milliseconds
 						n_intervals = 0
 					),
 ])
@@ -37,18 +38,16 @@ app.layout = html.Div(children=[
 	Input('interval-component','n_intervals')
 )
 def update_plot1(df):
-	#bucket='carbonveda-poc-test'
-	#key='spectra_09-28-39.txt'
-	#data = builder._s3_np(s3,bucket,key)
-	data = np.loadtxt(r'C:\Users\agmey\Desktop\spectra_11-37-08_test.txt')
-	spectra = data[5:]
-	ET = data[0]
-	print(pd.to_datetime(ET,unit='s'))
-
+	bucket='carbonveda-poc-test'
+	key='spectra_11-37-08_test.txt'
+	spectra = builder._s3_pd(s3,bucket,key)
+	#spectra = pd.read_csv(r'C:\Users\agmey\Desktop\spectra_11-37-08_test.txt',header =None)
+	spectra.set_index(0,inplace = True)
 	fig = make_subplots()
-	fig.add_trace(
-		go.Scatter(x = np.arange(0,len(spectra)), y = spectra),
-	)
+	for i in range(len(spectra)):
+		fig.add_trace(
+				go.Scatter(x = np.arange(0,len(spectra.columns)), y = spectra.iloc[i],mode = 'lines',name = spectra.index[i]),
+			)
 	return fig
 
 @app.callback(
@@ -72,5 +71,5 @@ def update_plot1(df):
 	return fig
 ########### Run the app
 if __name__ == '__main__':
-    #app.run_server(host="0.0.0.0", port=80,debug=True)
-    app.run_server(debug=True)
+    app.run_server(host="0.0.0.0", port=80,debug=True)
+    #app.run_server(debug=True)

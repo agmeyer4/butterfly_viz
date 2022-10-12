@@ -10,16 +10,16 @@ import os
 import numpy as np
 import io
 
-def _s3_np(s3_client,bucket,key):
+def _s3_pd(s3_client,bucket,key):
 	s3_client.download_file(bucket, key, 'temp.txt')
-	data = np.loadtxt('temp.txt')
+	data = pd.read_csv('temp.txt',header = None)
 	return data
 		
 def main():
 	s3 = boto3.client('s3')
 	bucket='carbonveda-poc-test'
-	key='spectra_09-28-39.txt'
-	data = _s3_np(s3,bucket,key)
+	key='spectra_11-37-08_test.txt'
+	data = _s3_pd(s3,bucket,key)
 	print(data)
 if __name__ == "__main__":
 	main()
