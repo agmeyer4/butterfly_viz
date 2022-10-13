@@ -11,8 +11,9 @@ import numpy as np
 import io
 
 def _s3_pd(s3_client,bucket,key):
-	s3_client.download_file(bucket, key, 'temp.txt')
-	data = pd.read_csv('temp.txt',header = None)
+	s3_client.download_file(bucket, key, f"temp_{key[:5]}.txt")
+	data = pd.read_csv(f"temp_{key[:5]}.txt",header = None)
+	os.remove(f"temp_{key[:5]}.txt")
 	return data
 		
 def main():
